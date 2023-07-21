@@ -3,6 +3,7 @@ package com.example.friendlychattingapp.authenticate
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import com.example.friendlychattingapp.databinding.ActivityVerifyOtpBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -22,10 +23,12 @@ class VerifyOtpActivity : AppCompatActivity() {
         auth= FirebaseAuth.getInstance()
 
         binding.button.setOnClickListener {
+            binding.progressBar.visibility= View.VISIBLE
             val code=binding.pinview.text.toString()
             val credential = PhoneAuthProvider.getCredential(verficationId!!, code)
             auth.signInWithCredential(credential)
                 .addOnCompleteListener {
+                    binding.progressBar.visibility= View.GONE
                     if (it.isSuccessful){
                         Toast.makeText(this, "Logged In", Toast.LENGTH_SHORT).show()
                         val intent= Intent(this, SetupProfile::class.java)

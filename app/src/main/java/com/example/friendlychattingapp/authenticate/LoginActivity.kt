@@ -3,6 +3,7 @@ package com.example.friendlychattingapp.authenticate
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.friendlychattingapp.MainActivity
 import com.example.friendlychattingapp.databinding.ActivityLoginBinding
@@ -37,20 +38,26 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun codeSent() {
+        binding.progressBar.visibility= View.VISIBLE
+        binding.getOtp.visibility=View.GONE
         callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
 
             override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-
+                binding.progressBar.visibility= View.GONE
+                binding.getOtp.visibility=View.VISIBLE
             }
 
             override fun onVerificationFailed(e: FirebaseException) {
-
+                binding.progressBar.visibility= View.GONE
+                binding.getOtp.visibility=View.VISIBLE
             }
 
             override fun onCodeSent(
                 verificationId: String,
                 token: PhoneAuthProvider.ForceResendingToken,
             ) {
+                binding.progressBar.visibility= View.GONE
+                binding.getOtp.visibility=View.VISIBLE
                val intent=Intent(this@LoginActivity, VerifyOtpActivity::class.java)
                 intent.putExtra("number","+91$number")
                 intent.putExtra("verificationId",verificationId)

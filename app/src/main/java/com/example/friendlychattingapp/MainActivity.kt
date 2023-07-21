@@ -1,6 +1,7 @@
 package com.example.friendlychattingapp
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -8,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.friendlychattingapp.adapter.ChatRowAdapter
 import com.example.friendlychattingapp.adapter.StatusAdapter
-import com.example.friendlychattingapp.adapter.itemClicked
+import com.example.friendlychattingapp.adapter.ItemClicked
 import com.example.friendlychattingapp.databinding.ActivityMainBinding
 import com.example.friendlychattingapp.model.Status
 import com.example.friendlychattingapp.model.UsersModel
@@ -22,24 +23,23 @@ import com.google.firebase.storage.FirebaseStorage
 import java.util.Date
 
 
-class MainActivity : AppCompatActivity(), itemClicked {
+class MainActivity : AppCompatActivity(), ItemClicked {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var database: FirebaseDatabase
     private lateinit var chatRowAdapter: ChatRowAdapter
-    private lateinit var currentUser:String
-    private lateinit var storage:FirebaseStorage
-    private var uid: String? =null
-    private var currentUserData: UsersModel? =null
-    private lateinit var statusAdapter:StatusAdapter
+    private lateinit var currentUser: String
+    private lateinit var storage: FirebaseStorage
+    private var currentUserData: UsersModel? = null
+    private lateinit var statusAdapter: StatusAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding= ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        currentUser= FirebaseAuth.getInstance().currentUser?.uid.toString()
-        database= FirebaseDatabase.getInstance()
-        storage=FirebaseStorage.getInstance()
+        currentUser = FirebaseAuth.getInstance().currentUser?.uid.toString()
+        database = FirebaseDatabase.getInstance()
+        storage = FirebaseStorage.getInstance()
 
         displayingChatUsers()
         displayingStatuses()
@@ -49,27 +49,32 @@ class MainActivity : AppCompatActivity(), itemClicked {
     }
 
     private fun displayingStatuses() {
-        statusAdapter=StatusAdapter()
-        binding.statusRV.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-        binding.statusRV.adapter=statusAdapter
-        database.reference.child("status").addValueEventListener(object : ValueEventListener {
+        statusAdapter = StatusAdapter()
+        binding.statusRV.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.statusRV.adapter = statusAdapter
+        database.reference.child("status")
+            .addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val userStatus = ArrayList<UsersStatusModel>()
-                if (snapshot.exists()) {
-                    for (data in snapshot.children) {
-                        val userStatusObj = UsersStatusModel()
-                        userStatusObj.name = data.child("name").getValue(String::class.java)
-                        userStatusObj.profileImage = data.child("profileImg").getValue(String::class.java)
-                        val statusArr= ArrayList<Status>()
-                        for (statusImg in data.child("stories").children){
-                            val img=statusImg.getValue(Status::class.java)
-                            if (img != null) {
-                                statusArr.add(img)
-                            }
-                        }
-                        userStatusObj.statuses=statusArr
-                        userStatus.add(userStatusObj)
-                    }
+
+                snapshot.children.forEach { data ->
+                    val userStatusObj = UsersStatusModel()
+
+                    // Set the values of the name and profileImage properties
+                    userStatusObj.name = data.child("name").getValue(String::class.java)
+                    userStatusObj.profileImage =
+                        data.child("profileImg").getValue(String::class.java)
+
+                    // Get the list of Status objects from the stories property
+                    val statusArr =
+                        data.child("stories").children.map { it.getValue(Status::class.java) }
+
+                    // Filter out the Status objects that are not null
+                    userStatusObj.statuses = statusArr.filterNotNull() as ArrayList<Status>
+
+                    // Add the UsersStatusModel object to the list of userStatus objects
+                    userStatus.add(userStatusObj)
                 }
                 statusAdapter.updatedItem(userStatus)
             }
@@ -82,65 +87,75 @@ class MainActivity : AppCompatActivity(), itemClicked {
     }
 
     private fun displayingChatUsers() {
-        chatRowAdapter= ChatRowAdapter(this)
-        binding.chartsRV.layoutManager=LinearLayoutManager(this)
-        binding.chartsRV.adapter=chatRowAdapter
+        chatRowAdapter = ChatRowAdapter(this)
+        binding.chartsRV.layoutManager = LinearLayoutManager(this)
+        binding.chartsRV.adapter = chatRowAdapter
 
         database.reference
             .child("users")
-            .addValueEventListener(object :ValueEventListener{
+            .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val users=ArrayList<UsersModel>()
-                    for (data in snapshot.children){
-                        val user =data.getValue(UsersModel::class.java)
-                        if (user?.uid!=currentUser) {
+                    val users = ArrayList<UsersModel>()
+                    for (data in snapshot.children) {
+                        val user = data.getValue(UsersModel::class.java)
+                        if (user?.uid != currentUser) {
                             users.add(user!!)
-                        }
-                        else{
-                            currentUserData= data.getValue(UsersModel::class.java)!!
+                        } else {
+                            currentUserData = data.getValue(UsersModel::class.java)!!
                         }
                     }
                     chatRowAdapter.updateItem(users)
                 }
+
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@MainActivity, "Something went wrong", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Something went wrong", Toast.LENGTH_SHORT)
+                        .show()
                 }
             })
     }
 
 
     override fun itemClicked(list: UsersModel) {
-        val intent= Intent(this,ChatActivity::class.java)
-        intent.putExtra("uid",list.uid)
+        val intent = Intent(this, ChatActivity::class.java)
+        intent.putExtra("uid", list.uid)
         intent.putExtra("name", list.name)
+        intent.putExtra("profile_img", list.profileImg)
         startActivity(intent)
     }
 
-    private val contracts=registerForActivityResult(ActivityResultContracts.GetContent()){
-        if(it!=null){
-            val date= Date()//fetching current date
-            val storageReference=storage.reference.child("status").child(date.time.toString())
+    private val contracts = registerForActivityResult(ActivityResultContracts.GetContent()) {
+        if (it != null) {
+            val date = Date()//fetching current date
+            val storageReference = storage.reference.child("status").child(date.time.toString())
             storageReference.putFile(it)//Uploading the data in firebase storage
-                .addOnCompleteListener{
-                    if (it.isSuccessful){
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
                         storageReference.downloadUrl.addOnSuccessListener {//downloading the uri of the image
-                            if (currentUserData!=null) {
-                                //Creating the HashMap for uploading the current user data
-                                val obj=HashMap<String,Any>()
-                                obj["name"]=currentUserData!!.name
-                                obj["profileImg"]=currentUserData!!.profileImg
-                                //uploading the users status
-                                database.reference.child("status").child(currentUser).updateChildren(obj)
-                                val status=Status(it.toString())
-                                database.reference.child("status").child(currentUser)
-                                    .child("stories")
-                                    .push()
-                                    .setValue(status)
+                            if (currentUserData != null) {
+                                postingImageInDataBase(it)
                             }
                         }
                     }
                 }
 
         }
+    }
+
+    private fun postingImageInDataBase(uri: Uri) {
+        //Creating the HashMap for uploading the current user data
+        val obj = HashMap<String, Any>()
+        obj["name"] = currentUserData!!.name
+        obj["profileImg"] = currentUserData!!.profileImg
+        //uploading the users status
+        database.reference.child("status").child(currentUser).updateChildren(obj)
+        //making status image object
+        val status = Status(uri.toString())
+        /*making new node in DB as stories
+        * uploading the uri of stories stored in firebase storage
+        * */
+        database.reference.child("status").child(currentUser)
+            .child("stories")
+            .push()
+            .setValue(status)
     }
 }

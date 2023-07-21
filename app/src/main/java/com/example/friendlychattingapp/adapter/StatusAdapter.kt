@@ -14,7 +14,7 @@ import omari.hamza.storyview.model.MyStory
 
 
 class StatusAdapter():RecyclerView.Adapter<StatusAdapter.MyViewHolder>(){
-    val status=ArrayList<UsersStatusModel>()
+    private val status=ArrayList<UsersStatusModel>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding = StatutsRvSampleBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -65,5 +65,4 @@ class StatusAdapter():RecyclerView.Adapter<StatusAdapter.MyViewHolder>(){
     }
 
     inner class MyViewHolder(val binding: StatutsRvSampleBinding) : RecyclerView.ViewHolder(binding.root)
-
 }
