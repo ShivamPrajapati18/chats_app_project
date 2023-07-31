@@ -3,6 +3,8 @@ package com.example.friendlychattingapp
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.friendlychattingapp.adapter.ChatRowAdapter
 import com.example.friendlychattingapp.adapter.StatusAdapter
 import com.example.friendlychattingapp.adapter.ItemClicked
+import com.example.friendlychattingapp.authenticate.LoginActivity
+import com.example.friendlychattingapp.authenticate.SetupProfile
 import com.example.friendlychattingapp.databinding.ActivityMainBinding
 import com.example.friendlychattingapp.model.Status
 import com.example.friendlychattingapp.model.UsersModel
@@ -30,6 +34,7 @@ class MainActivity : AppCompatActivity(), ItemClicked {
     private lateinit var chatRowAdapter: ChatRowAdapter
     private lateinit var currentUser: String
     private lateinit var storage: FirebaseStorage
+    private lateinit var auth: FirebaseAuth
     private var currentUserData: UsersModel? = null
     private lateinit var statusAdapter: StatusAdapter
 
@@ -37,9 +42,12 @@ class MainActivity : AppCompatActivity(), ItemClicked {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        currentUser = FirebaseAuth.getInstance().currentUser?.uid.toString()
+        auth=FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
         storage = FirebaseStorage.getInstance()
+        currentUser = auth.currentUser?.uid.toString()
+
+        setSupportActionBar(binding.toolbar)
 
         displayingChatUsers()
         displayingStatuses()
@@ -57,7 +65,6 @@ class MainActivity : AppCompatActivity(), ItemClicked {
             .addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val userStatus = ArrayList<UsersStatusModel>()
-
                 snapshot.children.forEach { data ->
                     val userStatusObj = UsersStatusModel()
 
@@ -157,5 +164,27 @@ class MainActivity : AppCompatActivity(), ItemClicked {
             .child("stories")
             .push()
             .setValue(status)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_toolbar_menu,menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId){
+            R.id.setupProfileMenuButton->{
+                startActivity(Intent(this,SetupProfile::class.java))
+                true
+            }
+            R.id.LogoutButton->{
+                auth.signOut()
+                val loginIntent = Intent(this, LoginActivity::class.java)
+                loginIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(loginIntent)
+                true
+            }
+            else-> super.onOptionsItemSelected(item)
+        }
     }
 }

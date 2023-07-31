@@ -4,6 +4,8 @@
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
         <item name="android:statusBarColor">@color/blue</item>
+        <item name="android:textColorSecondary">@color/white</item>
+
     </style>
 
     <style name="Theme.FriendlyChattingApp" parent="Base.Theme.FriendlyChattingApp" />

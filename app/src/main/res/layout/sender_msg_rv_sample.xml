@@ -11,7 +11,7 @@
         android:layout_margin="5dp"
         android:background="@drawable/sender_back"
         android:padding="10dp"
-        android:text="This Is sender Message"
+        android:text="@string/sender_message"
         android:textColor="@color/white"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"

@@ -31,6 +31,7 @@ class SetupProfile : AppCompatActivity() {
     private lateinit var uid:String
     private lateinit var storageReference:StorageReference
     private var wantChange=true
+    private var existingName:String?=null
 
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +46,7 @@ class SetupProfile : AppCompatActivity() {
         uid = auth.uid.toString()
         storageReference = storage.reference.child("profiles").child(uid)
 
-        loadingUserDataIfExists()
+        fetchingUserDataIfExists()
 
         binding.profileImg.setOnClickListener {
             contracts.launch("image/*")
@@ -55,20 +56,23 @@ class SetupProfile : AppCompatActivity() {
             val name = binding.nameBox.text.toString()
             val number = auth.currentUser?.phoneNumber.toString()
 
-            if (name.isEmpty())
-                binding.nameBox.error = "Enter The Name"
-                if(selectedImageUri!=null && wantChange) {
-                    binding.progressBar.visibility= View.VISIBLE
+            if (name.isNotEmpty()) {
+                /*If users only change there name*/
+                if (existingName!=name)
+                    loadingInDatabase(name, number, selectedImageUri.toString())
+                /*if Users change their image */
+                if ((selectedImageUri != null && wantChange)) {
+                    binding.progressBar.visibility = View.VISIBLE
                     storageReference.putFile(selectedImageUri!!)
                         .addOnCompleteListener {
                             if (it.isSuccessful) {
                                 storageReference.downloadUrl
                                     .addOnSuccessListener {
                                         val profileImg = it.toString()
-                                        imageLoadingInDatabase(name, number, profileImg)
+                                        loadingInDatabase(name, number, profileImg)
                                     }
                             } else {
-                                binding.progressBar.visibility= View.GONE
+                                binding.progressBar.visibility = View.GONE
                                 Toast.makeText(
                                     this@SetupProfile,
                                     "Something went wrong",
@@ -76,18 +80,21 @@ class SetupProfile : AppCompatActivity() {
                                 ).show()
                             }
                         }
-                }else{
+                } else {
                     if (wantChange)
-                        imageLoadingInDatabase(name,number,"No Image")
-                    else{
+                        loadingInDatabase(name, number, "No Image")
+                    /*this condition for checking if existing name and new ae same */
+                    else if (existingName==name) {
                         startActivity(Intent(this, MainActivity::class.java))
                         finishAffinity()
                     }
                 }
+            }else
+                binding.nameBox.error = "Enter The Name"
         }
     }
 
-    private fun loadingUserDataIfExists() {
+    private fun fetchingUserDataIfExists() {
         database.reference
             .child("users")
             .child(uid)
@@ -95,9 +102,9 @@ class SetupProfile : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()){
                         selectedImageUri= Uri.parse(snapshot.child("profileImg").getValue(String::class.java))
-                        val profileName=snapshot.child("name").getValue(String::class.java)
+                        existingName=snapshot.child("name").getValue(String::class.java)
                         Picasso.get().load(selectedImageUri).into(binding.profileImg)
-                        binding.nameBox.setText(profileName)
+                        binding.nameBox.setText(existingName)
                         wantChange=false
                     }
                 }
@@ -107,7 +114,7 @@ class SetupProfile : AppCompatActivity() {
             })
     }
 
-    private fun imageLoadingInDatabase(name:String, number: String, profileImg: String) {
+    private fun loadingInDatabase(name:String, number: String, profileImg: String) {
         val user = UsersModel(name, uid, number, profileImg)
         database.reference
             .child("users")

@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:fontFamily="@font/open_sans"
-        android:text="Verifying Your \nPhone Number"
+        android:text="@string/verifying_your_phone_number"
         android:textColor="@color/blue"
         android:textSize="40sp"
         android:textStyle="bold"
@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="150dp"
-        android:text="Please Type the Verfication Code sent to\n"
+        android:text="@string/please_type_the_verfication_code_sent_to_n"
         android:textColor="@color/black"
 
         app:layout_constraintEnd_toEndOf="parent"

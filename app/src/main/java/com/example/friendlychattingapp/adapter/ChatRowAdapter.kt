@@ -19,20 +19,14 @@ import java.util.Locale
 
 class ChatRowAdapter(
     private val listner: ItemClicked
-)
-    : RecyclerView.Adapter<ChatRowAdapter.MyViewHolder>() {
+): RecyclerView.Adapter<ChatRowAdapter.MyViewHolder>() {
 
     private val list=ArrayList<UsersModel>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val binding=ChatsRowRvSampleBinding.inflate(
-            LayoutInflater.from(parent.context),parent,false)
-
-        val view= MyViewHolder(binding)
-        view.itemView.setOnClickListener {
-            listner.itemClicked(list[view.adapterPosition])
-        }
-        return view
+        val binding = ChatsRowRvSampleBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false)
+        return MyViewHolder(binding)
     }
 
     override fun getItemCount(): Int =list.size
@@ -43,28 +37,40 @@ class ChatRowAdapter(
         Picasso.get().load(currentItem.profileImg)
             .placeholder(R.drawable.default_avatar_profile)
             .into(holder.binding.circleImageView)
+
+        holder.itemView.setOnClickListener {
+            listner.itemClicked(currentItem)
+        }
         // Retrieve last message and its timestamp from Firebase
+        displayingLastMsg_Time(currentItem, holder)
+    }
+
+    private fun displayingLastMsg_Time(
+        currentItem: UsersModel,
+        holder: MyViewHolder
+    ) {
         FirebaseDatabase.getInstance().reference.child("chats")
             .child(
-                FirebaseAuth.getInstance().currentUser!!.uid+
-                        currentItem.uid)
+                FirebaseAuth.getInstance().currentUser!!.uid +
+                        currentItem.uid
+            )
             .child("lastMsg")
-            .addValueEventListener(object :ValueEventListener{
+            .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()){
+                    if (snapshot.exists()) {
                         // Get the last message and its timestamp as String values
-                        val lastMsg=snapshot.child("lastMsg").getValue(String::class.java)
-                        val lastMsgTime=snapshot.child("time").getValue(String::class.java)
+                        val lastMsg = snapshot.child("lastMsg").getValue(String::class.java)
+                        val lastMsgTime = snapshot.child("time").getValue(String::class.java)
 
                         // Set the last message text
-                        holder.binding.chat.text=lastMsg
+                        holder.binding.chat.text = lastMsg
 
-//                        // Format the timestamp and set it in "hh:mm" format
+    //                        // Format the timestamp and set it in "hh:mm" format
                         val formattedTime = lastMsgTime?.let { formatTime(it.toLong()) }
                         holder.binding.time.text = formattedTime
-                    }else{
+                    } else {
                         // No last message exists, display "Tap to Chat"
-                        holder.binding.chat.text="Tap to Chat"
+                        holder.binding.chat.text = "Tap to Chat"
                         holder.binding.time.text = ""
                     }
                 }
@@ -74,6 +80,7 @@ class ChatRowAdapter(
                 }
             })
     }
+
     @SuppressLint("NotifyDataSetChanged")
     fun updateItem(users:ArrayList<UsersModel>) {
         list.clear()

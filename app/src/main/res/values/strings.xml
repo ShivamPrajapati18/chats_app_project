@@ -9,4 +9,20 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="setup_profile_menu">Setup Profile</string>
+    <string name="log_out">Log Out</string>
+    <string name="type_the_message">Type The Message</string>
+    <string name="welcome_nback">Welcome\nBack!!</string>
+    <string name="enter_the_number">Enter The Number</string>
+    <string name="get_opt">Get Opt</string>
+    <string name="select_the_profile_photo">Select The Profile Photo</string>
+    <string name="enter_the_text">Enter The Text</string>
+    <string name="setup_profile">Setup Profile</string>
+    <string name="verifying_your_phone_number">Verifying Your \nPhone Number</string>
+    <string name="please_type_the_verfication_code_sent_to_n">Please Type the Verfication Code sent to\n</string>
+    <string name="name">Name</string>
+    <string name="last_msg_time">6:00 AM</string>
+    <string name="last_msg">Tap to Chat</string>
+    <string name="receiver_message">This Is Receiver Message</string>
+    <string name="sender_message">This Is sender Message</string>
 </resources>

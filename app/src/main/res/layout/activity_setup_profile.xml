@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="Select The Profile Photo"
+        android:text="@string/select_the_profile_photo"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -54,7 +54,7 @@
                 android:background="@drawable/back"
                 android:ems="10"
                 android:padding="10dp"
-                android:hint="Enter The Text"
+                android:hint="@string/enter_the_text"
                 android:inputType="text"
                 android:textSize="20sp" />
 
@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:backgroundTint="@color/blue"
-                android:text="Setup Profile"
+                android:text="@string/setup_profile"
                 android:textSize="20sp"
 
                 />
